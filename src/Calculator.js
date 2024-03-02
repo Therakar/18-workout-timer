@@ -1,4 +1,4 @@
-import { memo, useEffect, useState } from "react";
+import { memo, useCallback, useEffect, useState } from "react";
 import clickSound from "./ClickSound.m4a";
 
 function Calculator({ workouts, allowSound }) {
@@ -9,6 +9,14 @@ function Calculator({ workouts, allowSound }) {
 
   const [duration, setDuration] = useState(0);
 
+  // const playSound = useCallback(
+  //   function () {
+  //     if (!allowSound) return;
+  //     const sound = new Audio(clickSound);
+  //     sound.play();
+  //   },
+  //   [allowSound]
+  // );
   //Here I'm using useEffect to keep the duration state in sync with the other pieces of state
   useEffect(
     function () {
@@ -17,15 +25,28 @@ function Calculator({ workouts, allowSound }) {
     [number, sets, speed, durationBreak]
   );
 
+  /*
+  I want the sound to play whenever the duration changes,
+  so I need to synchronize the isde effect of playing the sound
+  with the duration state.
+  To do that I created a new effect that will be responsible for that.
+  I shouldhave one effect for each sude effect that I want to have! 
+  */
+  useEffect(
+    function () {
+      const playSound = function () {
+        if (!allowSound) return;
+        const sound = new Audio(clickSound);
+        sound.play();
+      };
+      playSound();
+    },
+    [duration, allowSound]
+  );
+
   // const duration = (number * sets * speed) / 60 + (sets - 1) * durationBreak;
   const mins = Math.floor(duration);
   const seconds = (duration - mins) * 60;
-
-  const playSound = function () {
-    if (!allowSound) return;
-    const sound = new Audio(clickSound);
-    sound.play();
-  };
 
   function handleInc() {
     setDuration((duration) => Math.floor(duration) + 1);
